@@ -1,0 +1,66 @@
+use serde::Serialize;
+use sqlx::{PgPool, FromRow};
+use axum::http::{HeaderMap, Uri};
+use crate::base::build_url::build_absolute_url;
+
+#[derive(Serialize, Debug)]
+pub struct PaginatedResponse<T> {
+    pub count: i64,
+    pub next: Option<String>,
+    pub previous: Option<String>,
+    pub results: Vec<T>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct PaginationParams {
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+}
+
+pub async fn paginate_query<T>(
+    pool: &PgPool,
+    params: PaginationParams,
+    base_uri: &Uri,
+    sql_count: &str,
+    sql_data: &str,
+    headers: &HeaderMap,
+) -> Result<PaginatedResponse<T>, sqlx::Error>
+where
+    T: for<'r> FromRow<'r, sqlx::postgres::PgRow> + Send + Unpin,
+{
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(50) as i64;
+
+    let offset = (page as i64 - 1) * page_size;
+
+    let count: i64 = sqlx::query_scalar(sql_count)
+        .fetch_one(pool)
+        .await
+        .unwrap_or(0);
+
+    let results = sqlx::query_as::<_, T>(sql_data)
+        .bind(page_size)
+        .bind(offset)
+        .fetch_all(pool)
+        .await?;
+
+
+    let next = if offset + page_size < count {
+        Some(build_absolute_url(headers, base_uri, page + 1))
+    } else {
+        None
+    };
+
+    let previous = if page > 1 {
+        Some(build_absolute_url(headers, base_uri, page - 1))
+    } else {
+        None
+    };
+
+    Ok(PaginatedResponse {
+        count,
+        next,
+        previous,
+        results,
+    })
+}

@@ -1,0 +1,19 @@
+[package]
+name = "project_rust"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.7", features = ["json", "macros"] }
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1", features = ["v4", "serde"] }
+sqlx = { version = "0.7", features = ["postgres", "uuid", "chrono", "runtime-tokio-rustls"] }
+geo-types = { version = "0.7", features = ["serde"] }
+tracing-subscriber = "0.3"
+dotenvy = "0.15"
+chrono = { version = "0.4", features = ["serde"] }
+fake = "4.4"
+rand = "0.8"
