@@ -1,7 +1,7 @@
 use serde::Serialize;
 use sqlx::{PgPool, FromRow};
 use axum::http::{HeaderMap, Uri};
-use crate::base::build_url::build_absolute_url;
+use crate::helper::build_url::build_absolute_url;
 
 #[derive(Serialize, Debug)]
 pub struct PaginatedResponse<T> {
@@ -31,6 +31,10 @@ where
     let page = params.page.unwrap_or(1);
     let page_size = params.page_size.unwrap_or(50) as i64;
 
+    if page == 0 {
+        return Err(sqlx::Error::Protocol("Page number must be greater than 0".into()));
+    }
+
     let offset = (page as i64 - 1) * page_size;
 
     let count: i64 = sqlx::query_scalar(sql_count)
@@ -46,13 +50,19 @@ where
 
 
     let next = if offset + page_size < count {
-        Some(build_absolute_url(headers, base_uri, page + 1))
+        Some(format!("{}{}?page={}", 
+            build_absolute_url(headers),
+            base_uri,
+            page + 1))
     } else {
         None
     };
 
     let previous = if page > 1 {
-        Some(build_absolute_url(headers, base_uri, page - 1))
+        Some(format!("{}{}?page={}", 
+            build_absolute_url(headers),
+            base_uri,
+            page - 1))
     } else {
         None
     };

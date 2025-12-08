@@ -1,7 +1,7 @@
-use axum::http::{Uri, HeaderMap};
+use axum::http::{HeaderMap};
 
 #[allow(dead_code)]
-pub(crate) fn build_absolute_url(headers: &HeaderMap, uri: &Uri, page: u32) -> String {
+pub(crate) fn build_absolute_url(headers: &HeaderMap) -> String {
     let host = headers
         .get("host")
         .and_then(|v| v.to_str().ok())
@@ -12,13 +12,5 @@ pub(crate) fn build_absolute_url(headers: &HeaderMap, uri: &Uri, page: u32) -> S
         .and_then(|v| v.to_str().ok())
         .unwrap_or("http");
 
-    format!(
-        "{}://{}{}?page={}",
-        schema,
-        host,
-        uri.path(),
-        page
-    )
-
-
+    format!("{}://{}", schema, host)
 }

@@ -1,4 +1,5 @@
 pub mod load;
+pub mod company;
 
 use axum::Router;
 use sqlx::PgPool;

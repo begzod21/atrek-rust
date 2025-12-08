@@ -93,6 +93,4 @@ pub struct Load {
     pub count_day: Option<i32>,
 
     pub created_at: Option<DateTime<Utc>>,
-    pub pick_up_location: Option<String>,
-    pub deliver_to_location: Option<String>,
 }

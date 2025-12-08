@@ -1,11 +1,17 @@
-use axum::{extract::{Query, State, OriginalUri}, Json, http::{HeaderMap}};
-use sqlx::PgPool;
+use axum::{
+    Json,
+    Extension,
+    extract::{OriginalUri, Query, State},
+    http::HeaderMap,
+};
 use chrono::Utc;
-use uuid::Uuid;
 use rand::Rng;
+use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::app::load::models::Load;
-use crate::base::paginations::{paginate_query, PaginationParams, PaginatedResponse};
+use crate::base::paginations::{PaginatedResponse, PaginationParams, paginate_query};
+use crate::helper::tenant_context::with_tenant_schema;
 
 
 fn gen_random_coords() -> (f64, f64, f64, f64) {
@@ -23,110 +29,37 @@ pub async fn list_loads(
     OriginalUri(original_uri): OriginalUri,
     Query(params): Query<PaginationParams>,
     State(pool): State<PgPool>,
+    tenant: Extension<String>,
 ) -> Json<PaginatedResponse<Load>> {
+    let mut tx: sqlx::Transaction<'_, sqlx::Postgres> = pool.begin().await.unwrap();
+    print!("Using tenant schema: {}\n", tenant.0);
+
+    with_tenant_schema(&mut tx, &tenant).await.unwrap();
 
     let sql_count = "SELECT COUNT(*) FROM loads";
 
     let sql_data = r#"
-        SELECT 
-            id,
-            ST_AsText(pick_up_location) as pick_up_location,
-            ST_AsText(deliver_to_location) as deliver_to_location,
-            created_at,
-            -- add all other fields explicitly here, replacing * with the full list,
-            -- and for any geography/geometry fields, use ST_AsText or similar
-            is_active,
-            broker_id,
-            broker_company_id,
-            from_address,
-            to_address,
-            source_id,
-            source_name,
-            subject,
-            message_id,
-            thread_id,
-            mail_id,
-            pick_up_at,
-            pick_up_latitude,
-            pick_up_longitude,
-            pick_up_state,
-            pick_up_zip,
-            deliver_to,
-            deliver_to_latitude,
-            deliver_to_longitude,
-            deliver_zip,
-            duration,
-            distance,
-            order_number,
-            contact_name,
-            contact_address,
-            contact_phone,
-            contact_email,
-            contact_person,
-            received_date,
-            pick_up_date,
-            delivery_date,
-            pick_up_date_raw,
-            delivery_date_raw,
-            expire_date_raw,
-            expire_date,
-            notes,
-            pays,
-            posted_amount,
-            miles,
-            pieces,
-            stackable,
-            hazardous,
-            fast_load,
-            dock_level,
-            weight,
-            dims,
-            suggested_truck,
-            vehicle_type,
-            owner_name,
-            owner_email,
-            owner_key,
-            pick_up_at_geo,
-            deliver_to_geo,
-            pick_up_at_state,
-            deliver_to_state,
-            market_pays,
-            raw,
-            miles_out,
-            nearest_vehicles_count,
-            vehicle_team,
-            count_day
+        SELECT
+            *
         FROM loads
         ORDER BY created_at DESC
         LIMIT $1 OFFSET $2
     "#;
 
-    let response = paginate_query::<Load>(
-        &pool,
-        params,
-        &original_uri,
-        sql_count,
-        sql_data,
-        &headers
-
-    )
-    .await
-    .unwrap();
+    let response =
+        paginate_query::<Load>(&pool, params, &original_uri, sql_count, sql_data, &headers)
+            .await
+            .unwrap();
 
     Json(response)
 }
-
 
 #[axum::debug_handler]
 pub async fn create_random_load(State(pool): State<PgPool>) -> Json<Load> {
     let (pick_lon, pick_lat, deliver_lon, deliver_lat) = gen_random_coords();
 
-
-
     let load = Load {
         id: Uuid::new_v4(),
-        pick_up_location: Some(format!("POINT({} {})", pick_lon, pick_lat)),
-        deliver_to_location: Some(format!("POINT({} {})", deliver_lon, deliver_lat)),
         created_at: Some(Utc::now()),
 
         is_active: Some(true),
@@ -196,16 +129,10 @@ pub async fn create_random_load(State(pool): State<PgPool>) -> Json<Load> {
         r#"
         INSERT INTO loads (id, pick_up_location, deliver_to_location, created_at, source_id)
         VALUES ($1,
-                ST_SetSRID(ST_MakePoint($2, $3), 4326)::geography,
-                ST_SetSRID(ST_MakePoint($4, $5), 4326)::geography,
                 $6, $7)
         "#,
     )
     .bind(load.id)
-    .bind(pick_lon)
-    .bind(pick_lat)
-    .bind(deliver_lon)
-    .bind(deliver_lat)
     .bind(load.created_at)
     .bind(load.source_id)
     .execute(&pool)
