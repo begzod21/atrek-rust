@@ -46,13 +46,15 @@ where
         .await
         .unwrap_or(0);
 
-    let results = sqlx::query_as::<_, T>(sql_data)
-        .bind(page_size)         // $1
-        .bind(offset)            // $2
+    let results = sqlx::query_as::<_, T>(sql_data)            // $2
         .bind(sixty_minutes_ago) // $3
-        .bind(user_id)           // $4
+        .bind(user_id)
+        .bind(page_size)         // $1
+        .bind(offset)           // $4
         .fetch_all(&mut **tx)
         .await?;
+
+    println!("Results fetched: {}", results.len());
 
     let next = if offset + page_size < count {
         Some(format!("{}{}?page={}", build_absolute_url(headers), base_uri, page + 1))
