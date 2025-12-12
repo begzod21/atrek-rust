@@ -38,7 +38,7 @@ pub async fn list_loads(
     "#;
 
     let response =
-        paginate_query::<Load>(&pool, params, &original_uri, sql_count, sql_data, &headers)
+        paginate_query::<Load>(&mut tx, params, &original_uri, sql_count, sql_data, &headers)
             .await
             .unwrap();
 

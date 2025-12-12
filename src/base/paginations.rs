@@ -1,5 +1,5 @@
 use serde::Serialize;
-use sqlx::{PgPool, FromRow};
+use sqlx::{Transaction, Postgres, FromRow};
 use axum::http::{HeaderMap, Uri};
 use crate::helper::build_url::build_absolute_url;
 
@@ -17,8 +17,8 @@ pub struct PaginationParams {
     pub page_size: Option<u32>,
 }
 
-pub async fn paginate_query<T>(
-    pool: &PgPool,
+pub async fn paginate_query_with_tx<T>(
+    tx: &mut Transaction<'_, Postgres>,
     params: PaginationParams,
     base_uri: &Uri,
     sql_count: &str,
@@ -37,32 +37,37 @@ where
 
     let offset = (page as i64 - 1) * page_size;
 
+    // Count query transaction ichida
     let count: i64 = sqlx::query_scalar(sql_count)
-        .fetch_one(pool)
+        .fetch_one(&mut **tx)
         .await
         .unwrap_or(0);
 
+    // Data query transaction ichida
     let results = sqlx::query_as::<_, T>(sql_data)
         .bind(page_size)
         .bind(offset)
-        .fetch_all(pool)
+        .fetch_all(&mut **tx)
         .await?;
 
-
     let next = if offset + page_size < count {
-        Some(format!("{}{}?page={}", 
+        Some(format!(
+            "{}{}?page={}",
             build_absolute_url(headers),
             base_uri,
-            page + 1))
+            page + 1
+        ))
     } else {
         None
     };
 
     let previous = if page > 1 {
-        Some(format!("{}{}?page={}", 
+        Some(format!(
+            "{}{}?page={}",
             build_absolute_url(headers),
             base_uri,
-            page - 1))
+            page - 1
+        ))
     } else {
         None
     };
