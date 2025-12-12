@@ -113,7 +113,7 @@ pub async fn loads(
             ll.broker_company_id,
             ll.vehicle_team,
             -- M2M field: vehicle teams as array
-            (SELECT array_agg(vehicle_team_id)
+            (SELECT array_agg(team_id)
              FROM load_load_vehicle_teams lvt
              WHERE lvt.load_id = ll.id) AS vehicle_teams,
             ll.count_day, ll.is_active,
@@ -156,7 +156,7 @@ pub async fn loads(
             " AND EXISTS (
                 SELECT 1 FROM load_load_vehicle_teams lvt
                 WHERE lvt.load_id = ll.id
-                  AND lvt.vehicle_team_id IN ({})
+                  AND lvt.team_id IN ({})
             ) ",
             team_ids.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(",")
         ));
