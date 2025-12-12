@@ -5,6 +5,7 @@ use axum::{
     http::HeaderMap,
 };
 use sqlx::PgPool;
+use serde_json::json;
 
 use crate::app::load::models::Load;
 use crate::app::auth::models::AuthUser;
@@ -44,4 +45,14 @@ pub async fn list_loads(
             .unwrap();
 
     Json(response)
+}
+
+#[axum::debug_handler]
+pub async fn test() -> Json<serde_json::Value> {
+    let load = json!({
+        "test": "value",
+        "id": "12345",
+    });
+
+    Json(load)
 }
