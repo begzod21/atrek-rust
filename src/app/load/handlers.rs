@@ -68,13 +68,19 @@ pub async fn loads(
     with_tenant_schema(&mut tx, &tenant.schema_name).await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let team_ids: Vec<i64> = sqlx::query_scalar::<_, i64>(
+    let team_ids: Vec<i64> = match sqlx::query_scalar::<_, i64>(
         "SELECT team_id FROM user_user_teams WHERE user_id = $1"
     )
     .bind(user.id)
     .fetch_all(&mut *tx)
     .await
-    .unwrap_or_default();
+    {
+        Ok(ids) => ids,
+        Err(e) => {
+            eprintln!("Failed to fetch team_ids: {:?}", e);
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
 
     println!("User {} team IDs: {:?}", user.id, team_ids);
 
