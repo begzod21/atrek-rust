@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
-use sqlx::types::BigDecimal;
+use bigdecimal::BigDecimal;
 
 
 use chrono::{DateTime, Utc};
