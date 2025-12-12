@@ -6,6 +6,6 @@ pub fn routes(pool: PgPool) -> Router {
     Router::new()
         // .route("/list", get(list_loads))
         .route("/test", get(test))
-        .route("/", get(loads))
+        .route("/list", get(loads))
         .with_state(pool)
 }

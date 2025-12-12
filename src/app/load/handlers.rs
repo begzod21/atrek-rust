@@ -63,12 +63,12 @@ pub async fn loads(
     Extension(tenant): Extension<TenantCompany>,
     Extension(user): Extension<AuthUser>,
 ) -> Result<Json<PaginatedResponse<LoadListResponse>>, StatusCode> {
+    println!("user_id: {}", user.id);
+
     let mut tx = pool.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     
     with_tenant_schema(&mut tx, &tenant.schema_name).await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    println!("user_id: {}", user.id);
 
     let team_ids: Vec<i64> = match sqlx::query_scalar::<_, i64>(
         "SELECT team_id FROM user_user_teams WHERE user_id = $1"
