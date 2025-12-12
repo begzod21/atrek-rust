@@ -1,5 +1,4 @@
 use crate::app::company::models::TenantCompany;
-use crate::helper::build_url::build_absolute_url;
 
 use axum::{
     body::Body,
@@ -10,7 +9,7 @@ use axum::{
 use sqlx::PgPool;
 
 pub async fn tenant_middleware(mut req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
-    let domain_url = req.headers();
+    let domain_url = req.headers()
         .get("host")
         .and_then(|v| v.to_str().ok())
         .unwrap_or("localhost");
