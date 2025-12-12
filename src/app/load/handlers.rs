@@ -126,7 +126,7 @@ pub async fn loads(
             ) AS is_bid,
 
             EXISTS (
-                SELECT 1 FROM load_driver_bid AS driver_bid
+                SELECT 1 FROM load_driverbid AS driver_bid
                 WHERE driver_bid.load_id = ll.id
                   AND driver_bid.vehicle_id IN ({vehicles})
                   AND driver_bid.dispatch_bid_date IS NULL
