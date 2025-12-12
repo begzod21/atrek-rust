@@ -30,7 +30,6 @@ pub async fn loads(
     Extension(tenant): Extension<TenantCompany>,
     Extension(user): Extension<AuthUser>,
 ) -> Result<Json<PaginatedResponse<LoadListResponse>>, StatusCode> {
-    println!("user_id: {}", user.id);
 
     let mut tx = pool.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     
@@ -51,14 +50,10 @@ pub async fn loads(
         }
     };
 
-    println!("User {} team IDs: {:?}", user.id, team_ids);
-
     let sixty_minutes_ago = chrono::Utc::now() - chrono::Duration::minutes(60);
 
-    // COUNT QUERY
     let sql_count = "SELECT COUNT(*) FROM load_load ll WHERE ll.is_deleted = FALSE AND ll.is_active = TRUE";
 
-    // VEHICLES SUBQUERY
     let vehicles_subquery = if !team_ids.is_empty() {
         format!(
             "SELECT id FROM owner_vehicle WHERE status = 1 AND registration_status = 4 AND team_id IN ({})",
@@ -68,7 +63,6 @@ pub async fn loads(
         "SELECT id FROM owner_vehicle WHERE status = 1 AND registration_status = 4".to_string()
     };
 
-    // MAIN QUERY
     let mut sql = format!(
         r#"
         SELECT
