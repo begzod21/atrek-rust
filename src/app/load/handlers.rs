@@ -23,6 +23,7 @@ pub async fn list_loads(
     Extension(_user): Extension<AuthUser>
 ) -> Json<PaginatedResponse<Load>> {
     let mut tx: sqlx::Transaction<'_, sqlx::Postgres> = pool.begin().await.unwrap();
+    println!("Using tenant schema: {}", tenant.schema_name);
 
     with_tenant_schema(&mut tx, &tenant.schema_name).await.unwrap();
 
