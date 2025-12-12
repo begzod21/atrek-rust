@@ -68,6 +68,8 @@ pub async fn loads(
     with_tenant_schema(&mut tx, &tenant.schema_name).await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
+    println!("user_id: {}", user.id);
+
     let team_ids: Vec<i64> = match sqlx::query_scalar::<_, i64>(
         "SELECT team_id FROM user_user_teams WHERE user_id = $1"
     )
