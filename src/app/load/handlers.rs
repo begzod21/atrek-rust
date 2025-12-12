@@ -37,20 +37,15 @@ pub async fn loads(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let team_ids: Vec<i64> = match sqlx::query_scalar::<_, i64>(
+    let team_ids: Vec<i64> = sqlx::query_scalar(
         "SELECT team_id FROM user_user_teams WHERE user_id = $1"
     )
     .bind(user.id)
     .fetch_all(&mut *tx)
-    .await {
-        Ok(ids) => ids,
-        Err(e) => {
-            eprintln!("Failed to fetch team_ids: {:?}", e);
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
-        }
-    };
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let sixty_minutes_ago = chrono::Utc::now() - chrono::Duration::minutes(60);
+    let sixty_minutes_ago = Utc::now() - Duration::minutes(60);
 
     let sql_count = "SELECT COUNT(*) FROM load_load ll WHERE ll.is_deleted = FALSE AND ll.is_active = TRUE";
 
@@ -74,19 +69,14 @@ pub async fn loads(
             ll.delivery_date, ll.miles_out, ll.nearest_vehicles_count,
             ll.broker_company_id,
             ll.vehicle_team,
-            -- M2M field: vehicle teams as array
-            (SELECT array_agg(team_id)
-             FROM load_load_vehicle_teams lvt
-             WHERE lvt.load_id = ll.id) AS vehicle_teams,
+            (SELECT array_agg(team_id) FROM load_load_vehicle_teams lvt WHERE lvt.load_id = ll.id) AS vehicle_teams,
             ll.count_day, ll.is_active,
             bc.rating AS broker_rating,
-
             EXISTS (
                 SELECT 1 FROM load_bid AS bid
                 WHERE bid.load_id = ll.id
                   AND bid.vehicle_id IN ({vehicles})
             ) AS is_bid,
-
             EXISTS (
                 SELECT 1 FROM load_driverbid AS driver_bid
                 WHERE driver_bid.load_id = ll.id
@@ -94,13 +84,11 @@ pub async fn loads(
                   AND driver_bid.dispatch_bid_date IS NULL
                   AND driver_bid.created_at >= $3
             ) AS is_driver_bid,
-
             EXISTS (
                 SELECT 1 FROM load_load_is_read_users AS load_is_read_users
                 WHERE load_is_read_users.load_id = ll.id
                   AND load_is_read_users.user_id = $4
             ) AS is_read
-
         FROM load_load ll
         LEFT JOIN broker_brokercompany bc ON ll.broker_company_id = bc.id
         WHERE ll.is_deleted = FALSE
