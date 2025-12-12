@@ -47,13 +47,13 @@ where
         .unwrap_or(0);
     print!("Total count: {}\n", count);
 
-    let results = sqlx::query_as::<_, T>(sql_data)            // $2
-        .bind(sixty_minutes_ago) // $3
+    let results = sqlx::query_as::<_, T>(sql_data)
+        .bind(page_size)
+        .bind(offset)
+        .bind(sixty_minutes_ago)
         .bind(user_id)
-        .bind(page_size)         // $1
-        .bind(offset)           // $4
         .fetch_all(&mut **tx)
-        .await?;
+        .await.unwrap_or_else(|e| { eprintln!("{:?}", e); panic!() });
 
     println!("Results fetched: {}", results.len());
 
