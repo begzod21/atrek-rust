@@ -20,7 +20,7 @@ pub async fn tenant_middleware(mut req: Request<Body>, next: Next) -> Result<Res
 
     let tenant = sqlx::query_as!(
         TenantCompany,
-        r#"SELECT id, schema_name, domain_url FROM company WHERE domain_url = $1"#,
+        r#"SELECT id, schema_name, domain_url FROM company_company WHERE domain_url = $1"#,
         domain_url
     )
     .fetch_optional(&pool)

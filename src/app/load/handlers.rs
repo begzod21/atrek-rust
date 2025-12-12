@@ -26,12 +26,12 @@ pub async fn list_loads(
 
     with_tenant_schema(&mut tx, &tenant.schema_name).await.unwrap();
 
-    let sql_count = "SELECT COUNT(*) FROM loads";
+    let sql_count = "SELECT COUNT(*) FROM load_load";
 
     let sql_data = r#"
         SELECT
             *
-        FROM loads
+        FROM load_load
         ORDER BY created_at DESC
         LIMIT $1 OFFSET $2
     "#;
