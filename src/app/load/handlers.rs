@@ -140,7 +140,7 @@ pub async fn loads(
             ) AS is_read
 
         FROM load_load ll
-        LEFT JOIN broker_company bc ON ll.broker_company_id = bc.id
+        LEFT JOIN broker_brokercompany bc ON ll.broker_company_id = bc.id
         WHERE ll.is_deleted = FALSE
           AND ll.is_active = TRUE
         "#,
