@@ -67,7 +67,8 @@ pub async fn loads(
 
     let mut tx = pool.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     
-    with_tenant_schema(&mut tx, &tenant.schema_name).await
+    with_tenant_schema(&mut tx, &tenant.schema_name)
+        .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let team_ids: Vec<i64> = match sqlx::query_scalar::<_, i64>(
@@ -75,8 +76,7 @@ pub async fn loads(
     )
     .bind(user.id)
     .fetch_all(&mut *tx)
-    .await
-    {
+    .await {
         Ok(ids) => ids,
         Err(e) => {
             eprintln!("Failed to fetch team_ids: {:?}", e);
@@ -86,23 +86,22 @@ pub async fn loads(
 
     println!("User {} team IDs: {:?}", user.id, team_ids);
 
-    let sixty_minutes_ago =
-        chrono::Utc::now() - chrono::Duration::minutes(60);
+    let sixty_minutes_ago = chrono::Utc::now() - chrono::Duration::minutes(60);
 
     // COUNT QUERY
-    let sql_count = "SELECT COUNT(*) FROM load_load";
+    let sql_count = "SELECT COUNT(*) FROM load_load ll WHERE ll.is_deleted = FALSE AND ll.is_active = TRUE";
 
+    // VEHICLES SUBQUERY
     let vehicles_subquery = if !team_ids.is_empty() {
         format!(
-            "SELECT id FROM owner_vehicle 
-             WHERE status = 1 AND registration_status = 4
-               AND team_id IN ({})",
+            "SELECT id FROM owner_vehicle WHERE status = 1 AND registration_status = 4 AND team_id IN ({})",
             team_ids.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",")
         )
     } else {
         "SELECT id FROM vehicle WHERE status = 1 AND registration_status = 4".to_string()
     };
 
+    // MAIN QUERY
     let mut sql = format!(
         r#"
         SELECT
@@ -111,7 +110,12 @@ pub async fn loads(
             ll.vehicle_type, ll.pick_up_at_state, ll.pick_up_date,
             ll.pick_up_latitude, ll.pick_up_longitude, ll.deliver_to_state,
             ll.delivery_date, ll.miles_out, ll.nearest_vehicles_count,
-            ll.broker_company_id, ll.vehicle_team, ll.vehicle_teams,
+            ll.broker_company_id,
+            ll.vehicle_team,
+            -- M2M field: vehicle teams as array
+            (SELECT array_agg(vehicle_team_id)
+             FROM load_load_vehicle_teams lvt
+             WHERE lvt.load_id = ll.id) AS vehicle_teams,
             ll.count_day, ll.is_active,
             bc.rating AS broker_rating,
 
@@ -136,7 +140,7 @@ pub async fn loads(
             ) AS is_read
 
         FROM load_load ll
-        LEFT JOIN broker_brokercompany bc ON ll.broker_company_id = bc.id
+        LEFT JOIN broker_company bc ON ll.broker_company_id = bc.id
         WHERE ll.is_deleted = FALSE
           AND ll.is_active = TRUE
         "#,
@@ -154,16 +158,12 @@ pub async fn loads(
                 WHERE lvt.load_id = ll.id
                   AND lvt.vehicle_team_id IN ({})
             ) ",
-            team_ids
-                .iter()
-                .map(|i| i.to_string())
-                .collect::<Vec<_>>()
-                .join(",")
+            team_ids.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(",")
         ));
     }
 
     sql.push_str(" ORDER BY ll.received_date DESC LIMIT $1 OFFSET $2 ");
-    
+
     let res = paginate_query_with_tx::<LoadListResponse>(
         &mut tx,
         params,
