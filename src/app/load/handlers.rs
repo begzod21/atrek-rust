@@ -10,6 +10,9 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::app::load::models::Load;
+use crate::app::auth::models::AuthUser;
+use crate::app::company::models::TenantCompany;
+
 use crate::base::paginations::{PaginatedResponse, PaginationParams, paginate_query};
 use crate::helper::tenant_context::with_tenant_schema;
 
@@ -29,11 +32,12 @@ pub async fn list_loads(
     OriginalUri(original_uri): OriginalUri,
     Query(params): Query<PaginationParams>,
     State(pool): State<PgPool>,
-    tenant: Extension<String>,
+    Extension(tenant): Extension<TenantCompany>,
+    Extension(user): Extension<AuthUser>
 ) -> Json<PaginatedResponse<Load>> {
     let mut tx: sqlx::Transaction<'_, sqlx::Postgres> = pool.begin().await.unwrap();
 
-    with_tenant_schema(&mut tx, &tenant).await.unwrap();
+    with_tenant_schema(&mut tx, &tenant.schema_name).await.unwrap();
 
     let sql_count = "SELECT COUNT(*) FROM loads";
 

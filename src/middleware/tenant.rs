@@ -28,9 +28,7 @@ pub async fn tenant_middleware(mut req: Request<Body>, next: Next) -> Result<Res
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
     .ok_or(StatusCode::NOT_FOUND)?;
 
-    req.extensions_mut().insert(tenant.clone());
-
-    req.extensions_mut().insert(tenant.schema_name.clone());
+    req.extensions_mut().insert(tenant);
 
     Ok(next.run(req).await)
 }
