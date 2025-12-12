@@ -111,7 +111,7 @@ pub async fn loads(
             ll.vehicle_type, ll.pick_up_at_state, ll.pick_up_date,
             ll.pick_up_latitude, ll.pick_up_longitude, ll.deliver_to_state,
             ll.delivery_date, ll.miles_out, ll.nearest_vehicles_count,
-            ll.broker_company, ll.vehicle_team, ll.vehicle_teams,
+            ll.broker_company_id, ll.vehicle_team, ll.vehicle_teams,
             ll.count_day, ll.is_active,
             bc.rating AS broker_rating,
 
@@ -136,7 +136,7 @@ pub async fn loads(
             ) AS is_read
 
         FROM load_load ll
-        LEFT JOIN broker_brokercompany bc ON ll.broker_company = bc.id
+        LEFT JOIN broker_brokercompany bc ON ll.broker_company_id = bc.id
         WHERE ll.is_deleted = FALSE
           AND ll.is_active = TRUE
         "#,

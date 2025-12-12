@@ -30,7 +30,7 @@ pub struct LoadListResponse {
     pub delivery_date: Option<chrono::DateTime<chrono::Utc>>,
     pub miles_out: Option<f64>,
     pub nearest_vehicles_count: Option<i32>,
-    pub broker_company: Option<i64>,
+    pub broker_company_id: Option<i64>,
     pub vehicle_team: Option<sqlx::types::Json<Vec<i64>>>,
     pub vehicle_teams: Option<sqlx::types::Json<Vec<i64>>>,
     pub count_day: Option<i32>,
