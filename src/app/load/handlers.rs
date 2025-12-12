@@ -80,7 +80,7 @@ pub async fn loads(
         chrono::Utc::now() - chrono::Duration::minutes(60);
 
     // COUNT QUERY
-    let sql_count = if tenant.cargo_distance != -1 {
+    let sql_count = if tenant.cargo_distance != Some(-1.0) {
         "
         SELECT COUNT(*)
         FROM load_load ll
@@ -148,7 +148,7 @@ pub async fn loads(
         vehicles = vehicles_subquery,
     );
 
-    if tenant.cargo_distance != -1 {
+    if tenant.cargo_distance != Some(-1.0) {
         sql.push_str(" AND ll.nearest_vehicles_count > 0 ");
     }
 
