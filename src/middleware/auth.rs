@@ -52,9 +52,7 @@ pub async fn auth_middleware(
         serde_json::from_slice(&payload_json).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
     let auth_user = AuthUser {
-        id: claims.user_id,
-        username: claims.username,
-        company_id: claims.company_id,
+        id: claims.user_id
     };
 
     req.extensions_mut().insert(auth_user);
