@@ -22,7 +22,7 @@ pub struct LoadListResponse {
     pub nearest_vehicles_count: Option<i32>,
     pub broker_company_id: Option<i64>,
     pub vehicle_team: Option<Vec<i32>>,
-    pub vehicle_teams: Option<Vec<i32>>,
+    pub vehicle_teams: Option<Vec<i64>>,
     pub count_day: Option<i32>,
     pub is_active: bool,
     #[sqlx(rename = "broker_rating")]
