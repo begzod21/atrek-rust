@@ -14,9 +14,7 @@ use crate::app::auth::models::AuthUser;
 
 #[derive(Deserialize, Debug)]
 struct JWTClaims {
-    user_id: i32,
-    username: String,
-    company_id: i32,
+    user_id: i32
 }
 
 pub async fn auth_middleware(
