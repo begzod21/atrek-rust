@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 use sqlx::FromRow;
+use sqlx::types::BigDecimal;
+
 
 use chrono::{DateTime, Utc};
 
@@ -24,8 +26,8 @@ pub struct LoadListResponse {
     pub vehicle_type: Option<String>,
     pub pick_up_at_state: Option<String>,
     pub pick_up_date: Option<chrono::DateTime<chrono::Utc>>,
-    pub pick_up_latitude: Option<f64>,
-    pub pick_up_longitude: Option<f64>,
+    pub pick_up_latitude: Option<BigDecimal>,
+    pub pick_up_longitude: Option<BigDecimal>,
     pub deliver_to_state: Option<String>,
     pub delivery_date: Option<chrono::DateTime<chrono::Utc>>,
     pub miles_out: Option<f64>,
