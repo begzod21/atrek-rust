@@ -11,6 +11,7 @@ use sqlx::PgPool;
 
 pub async fn tenant_middleware(mut req: Request<Body>, next: Next) -> Result<Response, StatusCode> {
     let domain_url = build_absolute_url(req.headers());
+    println!("Domain URL: {}", domain_url);
 
     let pool = req
         .extensions()
