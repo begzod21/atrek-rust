@@ -6,5 +6,5 @@ pub struct TenantCompany {
     pub id: i64,
     pub schema_name: String,
     pub domain_url: String,
-    pub cargo_distance: i64,
+    pub cargo_distance: f64,
 }
