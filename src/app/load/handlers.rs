@@ -90,22 +90,7 @@ pub async fn loads(
         chrono::Utc::now() - chrono::Duration::minutes(60);
 
     // COUNT QUERY
-    let sql_count = if tenant.cargo_distance != Some(-1.0) {
-        "
-        SELECT COUNT(*)
-        FROM load_load ll
-        WHERE ll.is_deleted = FALSE
-          AND ll.is_active = TRUE
-          AND ll.nearest_vehicles_count > 0
-        "
-    } else {
-        "
-        SELECT COUNT(*)
-        FROM load_load ll
-        WHERE ll.is_deleted = FALSE
-          AND ll.is_active = TRUE
-        "
-    };
+    let sql_count = "SELECT COUNT(*) FROM load_load";
 
     let vehicles_subquery = if !team_ids.is_empty() {
         format!(
