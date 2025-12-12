@@ -26,7 +26,7 @@ pub struct LoadListResponse {
     pub count_day: Option<i32>,
     pub is_active: bool,
     #[sqlx(rename = "broker_rating")]
-    pub broker_rating: Option<f64>,
+    pub broker_rating: Option<i32>,
     pub is_bid: bool,
     pub is_driver_bid: bool,
     pub is_read: bool,
