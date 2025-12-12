@@ -10,7 +10,7 @@ use crate::app::load::models::Load;
 use crate::app::auth::models::AuthUser;
 use crate::app::company::models::TenantCompany;
 
-use crate::base::paginations::{PaginatedResponse, PaginationParams, paginate_query};
+use crate::base::paginations::{PaginatedResponse, PaginationParams, paginate_query_with_tx};
 use crate::helper::tenant_context::with_tenant_schema;
 
 #[axum::debug_handler]
@@ -38,7 +38,7 @@ pub async fn list_loads(
     "#;
 
     let response =
-        paginate_query::<Load>(&mut tx, params, &original_uri, sql_count, sql_data, &headers)
+        paginate_query_with_tx::<Load>(&mut tx, params, &original_uri, sql_count, sql_data, &headers)
             .await
             .unwrap();
 
