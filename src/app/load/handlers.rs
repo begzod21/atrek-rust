@@ -120,13 +120,13 @@ pub async fn loads(
             bc.rating AS broker_rating,
 
             EXISTS (
-                SELECT 1 FROM load_bid 
+                SELECT 1 FROM load_bid AS bid
                 WHERE bid.load_id = ll.id
                   AND bid.vehicle_id IN ({vehicles})
             ) AS is_bid,
 
             EXISTS (
-                SELECT 1 FROM load_driver_bid 
+                SELECT 1 FROM load_driver_bid AS driver_bid
                 WHERE driver_bid.load_id = ll.id
                   AND driver_bid.vehicle_id IN ({vehicles})
                   AND driver_bid.dispatch_bid_date IS NULL
@@ -134,7 +134,7 @@ pub async fn loads(
             ) AS is_driver_bid,
 
             EXISTS (
-                SELECT 1 FROM load_load_is_read_users
+                SELECT 1 FROM load_load_is_read_users AS load_is_read_users
                 WHERE load_is_read_users.load_id = ll.id
                   AND load_is_read_users.user_id = $4
             ) AS is_read
