@@ -76,6 +76,8 @@ pub async fn loads(
     .await
     .unwrap_or_default();
 
+    println!("User {} team IDs: {:?}", user.id, team_ids);
+
     let sixty_minutes_ago =
         chrono::Utc::now() - chrono::Duration::minutes(60);
 
