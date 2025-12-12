@@ -29,7 +29,7 @@ pub struct LoadListResponse {
     pub pick_up_longitude: Option<f64>,
     pub deliver_to_state: Option<String>,
     pub delivery_date: Option<chrono::DateTime<chrono::Utc>>,
-    pub miles_out: Option<f64>,
+    pub miles_out: Option<i32>,
     pub nearest_vehicles_count: Option<i32>,
     pub broker_company_id: Option<i64>,
     pub vehicle_team: Option<sqlx::types::Json<Vec<i64>>>,
