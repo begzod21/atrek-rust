@@ -45,6 +45,7 @@ where
         .fetch_one(&mut **tx)
         .await
         .unwrap_or(0);
+    print!("Total count: {}\n", count);
 
     let results = sqlx::query_as::<_, T>(sql_data)            // $2
         .bind(sixty_minutes_ago) // $3
