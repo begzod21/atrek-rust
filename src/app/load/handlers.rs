@@ -69,7 +69,7 @@ pub async fn loads(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let team_ids: Vec<i64> = sqlx::query_scalar::<_, i64>(
-        "SELECT team_id FROM user_team WHERE user_id = $1"
+        "SELECT team_id FROM user_user_teams WHERE user_id = $1"
     )
     .bind(user.id)
     .fetch_all(&mut *tx)
@@ -157,7 +157,7 @@ pub async fn loads(
     if !team_ids.is_empty() {
         sql.push_str(&format!(
             " AND EXISTS (
-                SELECT 1 FROM load_vehicle_teams lvt
+                SELECT 1 FROM load_load_vehicle_teams lvt
                 WHERE lvt.load_id = ll.id
                   AND lvt.vehicle_team_id IN ({})
             ) ",
