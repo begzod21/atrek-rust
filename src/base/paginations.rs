@@ -35,6 +35,12 @@ where
     let page_size = params.page_size.unwrap_or(50) as i64;
     let offset = (page as i64 - 1) * page_size;
 
+    println!("SQL COUNT: {}", sql_count);
+    println!("SQL DATA: {}", sql_data);
+    println!("sixty_minutes_ago: {:?}", sixty_minutes_ago);
+    println!("user_id: {}", user_id);
+
+
     let count: i64 = sqlx::query_scalar(sql_count)
         .fetch_one(&mut **tx)
         .await
