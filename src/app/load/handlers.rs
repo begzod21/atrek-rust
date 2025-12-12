@@ -20,7 +20,7 @@ pub async fn list_loads(
     Query(params): Query<PaginationParams>,
     State(pool): State<PgPool>,
     Extension(tenant): Extension<TenantCompany>,
-    Extension(user): Extension<AuthUser>
+    Extension(_user): Extension<AuthUser>
 ) -> Json<PaginatedResponse<Load>> {
     let mut tx: sqlx::Transaction<'_, sqlx::Postgres> = pool.begin().await.unwrap();
 
