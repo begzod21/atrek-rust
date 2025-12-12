@@ -35,7 +35,7 @@ pub async fn list_loads(
         FROM load_load
         WHERE is_deleted = FALSE and is_active = TRUE
         ORDER BY received_date DESC
-        LIMIT $1 OFFSET $2
+        LIMIT $1
     "#;
 
     let response =

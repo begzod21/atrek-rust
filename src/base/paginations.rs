@@ -46,7 +46,6 @@ where
     // Data query transaction ichida
     let results = sqlx::query_as::<_, T>(sql_data)
         .bind(page_size)
-        .bind(offset)
         .fetch_all(&mut **tx)
         .await?;
 
