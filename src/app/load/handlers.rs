@@ -168,8 +168,7 @@ pub async fn loads(
     }
 
     sql.push_str(" ORDER BY ll.received_date DESC LIMIT $1 OFFSET $2 ");
-
-    // PAGINATION
+    
     let res = paginate_query_with_tx::<LoadListResponse>(
         &mut tx,
         params,
@@ -177,6 +176,8 @@ pub async fn loads(
         sql_count,
         &sql,
         &headers,
+        sixty_minutes_ago,
+        user.id as i64,
     )
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
