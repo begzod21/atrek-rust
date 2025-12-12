@@ -98,7 +98,7 @@ pub async fn loads(
             team_ids.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(",")
         )
     } else {
-        "SELECT id FROM vehicle WHERE status = 1 AND registration_status = 4".to_string()
+        "SELECT id FROM owner_vehicle WHERE status = 1 AND registration_status = 4".to_string()
     };
 
     // MAIN QUERY
