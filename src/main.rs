@@ -5,7 +5,7 @@ mod base;
 mod middleware;
 mod helper;
 
-use axum::{http::Method, Extension, middleware as axum_middleware};
+use axum::{http::{Method, HeaderValue}, Extension, middleware as axum_middleware};
 use db::connection::create_pool;
 use tokio::net::TcpListener;
 use utils::config::Config;
@@ -23,7 +23,11 @@ async fn main() {
     let pool = create_pool(&config.database_url).await;
 
     let cors = CorsLayer::new()
-        .allow_origin(Any)
+        .allow_origin([
+            "https://test.atrek.icu".parse::<HeaderValue>().unwrap(),
+            "http://127.0.0.1:8000".parse::<HeaderValue>().unwrap(),
+            "http://127.0.0.1:8088".parse::<HeaderValue>().unwrap(),
+        ])
         .allow_methods(vec![Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
         .allow_headers(Any);
 
