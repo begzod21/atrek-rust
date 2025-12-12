@@ -33,7 +33,8 @@ pub async fn list_loads(
         SELECT
             *
         FROM load_load
-        ORDER BY created_at DESC
+        WHERE is_deleted = FALSE and is_active = TRUE
+        ORDER BY received_date DESC
         LIMIT $1 OFFSET $2
     "#;
 
