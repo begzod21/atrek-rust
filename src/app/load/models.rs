@@ -18,7 +18,7 @@ pub struct LoadListResponse {
     pub pick_up_at: Option<String>,
     pub deliver_to: Option<String>,
     pub suggested_truck: Option<String>,
-    pub miles: Option<f64>,
+    pub miles: Option<i32>,
     pub contact_name: Option<String>,
     pub source_name: Option<String>,
     pub vehicle_type: Option<String>,
