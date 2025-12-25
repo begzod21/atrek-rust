@@ -139,6 +139,7 @@ pub struct WebhookResponse {
     result: bool
 }
 
+#[axum::debug_handler]
 pub async fn postal_webhook(
     State(pool): State<PgPool>,
     Extension(tenant): Extension<TenantCompany>,
@@ -196,7 +197,7 @@ pub async fn postal_webhook(
         .map(|s| s.to_string())
         .unwrap_or_default();
 
-    println!("{} {} {} {} {} {} {}", from_address, to_address, subject, message_id, received_time, html_body, reply_to);
+    println!("{} {} {} {} {} {}", from_address, to_address, subject, message_id, received_time, reply_to);
 
 
     Ok(Json(WebhookResponse { result: true }))
