@@ -26,12 +26,11 @@ pub async fn tenant_middleware(
         .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let tenant = sqlx::query_as::<_, TenantCompany>(
-            r#"SELECT id, schema_name, domain_url, cargo_distance 
-               FROM company_company 
-               WHERE domain_url = $1 OR domain_url ILIKE $2"#
-        )
-        .bind(domain_url.clone())
-        .bind(format!("%{}%", domain_url.trim()))
+        r#"SELECT id, schema_name, domain_url, cargo_distance
+        FROM company_company
+        WHERE domain_url = $1"#
+    )
+        .bind(&domain_url)
         .fetch_optional(&pool)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
