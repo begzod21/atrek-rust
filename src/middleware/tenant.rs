@@ -25,23 +25,17 @@ pub async fn tenant_middleware(
         .cloned()
         .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let tenant_opt = sqlx::query_as::<_, TenantCompany>(
+    let tenant = sqlx::query_as::<_, TenantCompany>(
         r#"SELECT id, schema_name, domain_url, cargo_distance
-            FROM company_company
-            WHERE domain_url = $1"#
-        )
-            .bind(domain_url.clone())
-            .bind(format!("%{}%", domain_url.trim()))
-            .fetch_optional(&pool)
-            .await
-            .map_err(|e| {
-                println!("SQL ERROR: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
-            })?;
-
-    println!("TENANT FOUND? {}", tenant_opt.is_some());
-
-    let tenant = tenant_opt.ok_or(StatusCode::NOT_FOUND)?;
+        FROM company_company
+        WHERE domain_url = $1"#
+    )
+        .bind(&domain_url)
+        .fetch_optional(&pool)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
+        .ok_or(StatusCode::NOT_FOUND)?;
+    println!("{}", tenant.schema_name);
 
     req.extensions_mut().insert(tenant);
 
