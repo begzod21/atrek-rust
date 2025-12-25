@@ -33,9 +33,7 @@ pub async fn tenant_middleware(
         .bind(&domain_url)
         .fetch_optional(&pool)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-        .ok_or(StatusCode::NOT_FOUND)?;
-    println!("{}", tenant.schema_name);
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     req.extensions_mut().insert(tenant);
 
