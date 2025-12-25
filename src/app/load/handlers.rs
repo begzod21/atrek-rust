@@ -145,13 +145,18 @@ pub async fn postal_webhook(
     Extension(tenant): Extension<TenantCompany>,
     body: Bytes
 ) -> Result<Json<WebhookResponse>, StatusCode> {
+    println!("{}", tenant.schema_name);
     let mut tx = pool.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     
     with_tenant_schema(&mut tx, &tenant.schema_name)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let message = MessageParser::default().parse(&*body).unwrap();
+    let raw_body = String::from_utf8_lossy(&body).to_string();
+
+    let message = MessageParser::new()
+        .parse(raw_body.as_bytes())
+        .ok_or(StatusCode::BAD_REQUEST)?;
 
     if let Some(from) = message.from() {
         if let Some(addr) = from.first() {
