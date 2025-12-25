@@ -32,7 +32,7 @@ async fn main() {
         .allow_headers(Any);
 
     let app = app::app_routes(pool.clone())
-        // .layer(axum_middleware::from_fn(tenant_middleware))
+        .layer(axum_middleware::from_fn(tenant_middleware))
         // .layer(axum_middleware::from_fn(auth_middleware))
         .layer(Extension(pool.clone()))
         .layer(cors);
