@@ -6,6 +6,6 @@ pub fn routes(pool: PgPool) -> Router {
     Router::new()
         .route("/test", get(test))
         .route("/list", get(loads))
-        .route("/postal-webhook", post(postal_webhook))
+        .route("/webhook", post(postal_webhook))
         .with_state(pool)
 }
