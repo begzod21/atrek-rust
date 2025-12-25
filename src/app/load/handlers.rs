@@ -162,14 +162,14 @@ pub async fn postal_webhook(
     let from_address = message
         .from()
         .and_then(|addrs| addrs.first())
-        .and_then(|addr| addr.address())
+        .and_then(|addr| addr.address.clone())
         .map(|s| s.to_string())
         .unwrap_or_default();
 
     let to_address = message
         .to()
         .and_then(|addrs| addrs.first())
-        .and_then(|addr| addr.address())
+        .and_then(|addr| addr.address.clone())
         .map(|s| s.to_string())
         .unwrap_or_default();
 
