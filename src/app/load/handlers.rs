@@ -151,9 +151,7 @@ pub async fn postal_webhook(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let raw_body = String::from_utf8_lossy(&body).to_string();
-
-    let message = MessageParser::default().parse(&raw_body).unwrap();
+    let message = MessageParser::default().parse(&*body).unwrap();
 
     if let Some(from) = message.from() {
         if let Some(addr) = from.first() {
