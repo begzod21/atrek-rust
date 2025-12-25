@@ -4,7 +4,7 @@ use axum::{
 use sqlx::PgPool;
 use serde_json::json;
 use chrono::{Utc, Duration};
-use mail_parser::{HeaderValue, MessageParser};
+use mail_parser::{MessageParser};
 
 use crate::app::load::models::{LoadListResponse};
 use crate::app::auth::models::AuthUser;
