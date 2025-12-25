@@ -17,7 +17,6 @@ pub async fn tenant_middleware(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("localhost")
         .to_string();
-    println!("Domain URL: {}", domain_url);
 
     let pool = req
         .extensions()
@@ -35,7 +34,6 @@ pub async fn tenant_middleware(
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .ok_or(StatusCode::NOT_FOUND)?;
-    println!("{}", tenant.schema_name);
 
     req.extensions_mut().insert(tenant);
 
