@@ -11,7 +11,7 @@ use tokio::net::TcpListener;
 use utils::config::Config;
 
 use middleware::tenant::tenant_middleware;
-use middleware::auth::auth_middleware;
+// use middleware::auth::auth_middleware;
 
 use tower_http::cors::{CorsLayer, Any};
 
@@ -33,7 +33,7 @@ async fn main() {
 
     let app = app::app_routes(pool.clone())
         .layer(axum_middleware::from_fn(tenant_middleware))
-        .layer(axum_middleware::from_fn(auth_middleware))
+        // .layer(axum_middleware::from_fn(auth_middleware))
         .layer(Extension(pool.clone()))
         .layer(cors);
 
