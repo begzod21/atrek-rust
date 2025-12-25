@@ -1,9 +1,10 @@
 use axum::{
-    Extension, Json, extract::{OriginalUri, Query, State}, http::{HeaderMap, StatusCode}
+    Extension, Json, extract::{OriginalUri, Query, State}, body::{Bytes}, http::{HeaderMap, StatusCode}
 };
 use sqlx::PgPool;
 use serde_json::json;
 use chrono::{Utc, Duration};
+use mail_parser::{HeaderValue, MessageParser};
 
 use crate::app::load::models::{LoadListResponse};
 use crate::app::auth::models::AuthUser;
@@ -130,4 +131,74 @@ pub async fn loads(
 
     tx.commit().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     Ok(Json(res))
+}
+
+
+#[derive(serde::Serialize)]
+pub struct WebhookResponse {
+    result: bool
+}
+
+pub async fn postal_webhook(
+    State(pool): State<PgPool>,
+    Extension(tenant): Extension<TenantCompany>,
+    body: Bytes
+) -> Result<Json<WebhookResponse>, StatusCode> {
+    let mut tx = pool.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    
+    with_tenant_schema(&mut tx, &tenant.schema_name)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let raw_body = String::from_utf8_lossy(&body).to_string();
+
+    let message = MessageParser::new()
+        .parse(raw_body.as_bytes())
+        .ok_or(StatusCode::BAD_REQUEST)?;
+
+    let from_address = message
+        .from()
+        .and_then(|addrs| addrs.first())
+        .and_then(|addr| addr.address())
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    let to_address = message
+        .to()
+        .and_then(|addrs| addrs.first())
+        .and_then(|addr| addr.address())
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    let subject = message
+        .subject()
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    let message_id = message
+        .message_id()
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    let received_time = message
+        .date()
+        .map_or_else(|| Utc::now().to_rfc3339(), |dt| dt.to_rfc3339());
+
+    let html_body = message.body_html(0)
+        .as_ref()
+        .map(|body| body.to_string())
+        .unwrap_or_default();
+
+    let reply_to = message
+        .reply_to()
+        .and_then(|addrs| addrs.first())
+        .and_then(|addr| addr.address())
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    println!("{} {} {} {} {} {} {}", from_address, to_address, subject, message_id, received_time, html_body, reply_to);
+
+
+    Ok(Json(WebhookResponse { result: true }))
+    
 }

@@ -18,3 +18,4 @@ fake = "4.4"
 rand = "0.8"
 base64 = "0.22"
 tower-http = { version = "0.5", features = ["cors"] }
+mail-parser = "0.9"
