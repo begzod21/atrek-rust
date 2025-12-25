@@ -33,6 +33,7 @@ pub async fn tenant_middleware(mut req: Request<Body>, next: Next) -> Result<Res
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
         .ok_or(StatusCode::NOT_FOUND)?;
+    println!("{}", tenant.schema_name);
 
     req.extensions_mut().insert(tenant);
 
