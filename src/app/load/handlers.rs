@@ -155,9 +155,7 @@ pub async fn postal_webhook(
     let raw_body = String::from_utf8_lossy(&body).to_string();
     println!("{}", raw_body);
 
-    let message = MessageParser::new()
-        .parse(raw_body.as_bytes())
-        .ok_or(StatusCode::BAD_REQUEST)?;
+    let message = MessageParser::default().parse(&raw_body).unwrap();
 
     if let Some(from) = message.from() {
         if let Some(addr) = from.first() {
@@ -182,7 +180,7 @@ pub async fn postal_webhook(
     }
 
     if let Some(date) = message.date() {
-        println!("Date: {}", date.to_rfc3339()); // Or access .year, .month, etc.
+        println!("Date: {}", date.to_rfc3339());
     }
 
     if let Some(reply_to) = message.reply_to() {
