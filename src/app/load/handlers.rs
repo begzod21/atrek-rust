@@ -160,14 +160,12 @@ pub async fn postal_webhook(
 
     if let Some(from) = message.from() {
         if let Some(addr) = from.first() {
-            println!("From Name: {:?}", addr.name);
             println!("From Email: {:?}", addr.address);
         }
     }
 
     if let Some(to) = message.to() {
         if let Some(addr) = to.first() {
-            println!("To Name: {:?}", addr.name);
             println!("To Email: {:?}", addr.address);
         }
     }
