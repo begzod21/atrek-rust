@@ -159,47 +159,38 @@ pub async fn postal_webhook(
         .parse(raw_body.as_bytes())
         .ok_or(StatusCode::BAD_REQUEST)?;
 
-    let from_address = message
-        .from()
-        .and_then(|addrs| addrs.first())
-        .and_then(|addr| addr.address.clone())
-        .map(|s| s.to_string())
-        .unwrap_or_default();
+    if let Some(from) = message.from() {
+        if let Some(addr) = from.first() {
+            println!("From Name: {:?}", addr.name);
+            println!("From Email: {:?}", addr.address);
+        }
+    }
 
-    let to_address = message
-        .to()
-        .and_then(|addrs| addrs.first())
-        .and_then(|addr| addr.address.clone())
-        .map(|s| s.to_string())
-        .unwrap_or_default();
+    if let Some(to) = message.to() {
+        if let Some(addr) = to.first() {
+            println!("To Name: {:?}", addr.name);
+            println!("To Email: {:?}", addr.address);
+        }
+    }
 
-    let subject = message
-        .subject()
-        .map(|s| s.to_string())
-        .unwrap_or_default();
+    if let Some(subject) = message.subject() {
+        println!("Subject: {}", subject);
+    }
 
-    let message_id = message
-        .message_id()
-        .map(|s| s.to_string())
-        .unwrap_or_default();
+    if let Some(msg_id) = message.message_id() {
+        println!("Message-ID: {}", msg_id);
+    }
 
-    let received_time = message
-        .date()
-        .map_or_else(|| Utc::now().to_rfc3339(), |dt| dt.to_rfc3339());
+    if let Some(date) = message.date() {
+        println!("Date: {}", date.to_rfc3339()); // Or access .year, .month, etc.
+    }
 
-    let html_body = message.body_html(0)
-        .as_ref()
-        .map(|body| body.to_string())
-        .unwrap_or_default();
+    if let Some(reply_to) = message.reply_to() {
+        if let Some(addr) = reply_to.first() {
+            println!("Reply-To Email: {:?}", addr.address);
+        }
+    }
 
-    let reply_to = message
-        .reply_to()
-        .and_then(|addrs| addrs.first())
-        .and_then(|addr| addr.address())
-        .map(|s| s.to_string())
-        .unwrap_or_default();
-
-    println!("{} {} {} {} {} {}", from_address, to_address, subject, message_id, received_time, reply_to);
 
 
     Ok(Json(WebhookResponse { result: true }))
